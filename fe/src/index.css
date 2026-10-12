@@ -1,0 +1,230 @@
+:root {
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Helvetica, Arial,
+    sans-serif;
+  line-height: 1.5;
+  color-scheme: dark;
+  color: #e6edf3;
+  background-color: #0d1117;
+  --border: #30363d;
+  --muted: #8b949e;
+  --accent: #238636;
+  --accent-hover: #2ea043;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1,
+h2 {
+  margin: 0;
+  line-height: 1.2;
+}
+h2 {
+  font-size: 1.25rem;
+}
+
+code {
+  background: #161b22;
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+
+a {
+  color: #58a6ff;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.status {
+  color: var(--muted);
+  padding: 2rem 0;
+}
+
+.error {
+  background: rgba(248, 81, 73, 0.1);
+  border: 1px solid rgba(248, 81, 73, 0.4);
+  color: #ff7b72;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  margin: 0.5rem 0;
+}
+
+/* ---------------------------------------------------------------- buttons */
+.btn {
+  background: #21262d;
+  color: #e6edf3;
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.9rem;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+.btn:hover:not(:disabled) {
+  background: #30363d;
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.search {
+  background: #0d1117;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.6rem;
+}
+.search:focus {
+  outline: 2px solid #1f6feb;
+  outline-offset: -1px;
+}
+
+/* ----------------------------------------------------------------- layout */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: #161b22;
+  position: sticky;
+  top: 0;
+}
+.brand {
+  font-weight: 700;
+}
+.who {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.avatar {
+  border-radius: 50%;
+}
+
+.content {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.card {
+  max-width: 420px;
+  margin: 12vh auto 0;
+  padding: 1.75rem;
+  background: #161b22;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+.card h2 {
+  font-size: 1.4rem;
+}
+.card p {
+  margin: 0;
+}
+.signin .btn {
+  margin-top: 0.5rem;
+}
+
+/* ------------------------------------------------------------------ table */
+.repos {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+.repos th,
+.repos td {
+  text-align: left;
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.repos th {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.repos tbody tr:hover {
+  background: #161b22;
+}
+.repos .num {
+  text-align: right;
+}
+.desc {
+  font-size: 0.82rem;
+  max-width: 46ch;
+  margin-top: 0.15rem;
+}
+
+.tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.tag.public {
+  color: #7ee787;
+  border-color: rgba(126, 231, 135, 0.4);
+}
+.tag.private {
+  color: #d2a8ff;
+  border-color: rgba(210, 168, 255, 0.4);
+}
+
+.empty {
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  padding: 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+.empty p {
+  margin: 0;
+}

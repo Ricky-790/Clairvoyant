@@ -1,0 +1,14 @@
+[project]
+name = "clairvoyant"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "server",
+    "db",
+]
+
+[tool.uv.sources]
+server = { workspace = true }
+db = {workspace=true}
+[tool.uv.workspace]
+members = ["packages/*"]
