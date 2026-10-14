@@ -12,10 +12,12 @@ dependencies = [
     "authlib>=1.8.0",
     "joserfc>=1.7.5",
     "db",
+    "pydantic>=2.14.0",
 ]
 
 [tool.uv.sources]
 db = { workspace = true }
+worker_services = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

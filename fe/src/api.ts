@@ -72,6 +72,22 @@ export function logout(): Promise<{ ok: boolean }> {
   return request<{ ok: boolean }>("/auth/logout", { method: "POST" });
 }
 
+export type StartIngestionInput = {
+  installation_id: number;
+  repo_id: number;
+  repo_full_name: string;
+};
+
+export function startIngestion(
+  body: StartIngestionInput
+): Promise<{ message: string }> {
+  return request<{ message: string }>("/repos/ingest", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
 /** Full-page redirect into the backend's OAuth flow. */
 export function signInWithGitHub(): void {
   window.location.href = `${API_URL}/auth/github/login`;

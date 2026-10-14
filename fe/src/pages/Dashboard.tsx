@@ -5,9 +5,16 @@ import {
   installApp,
   logout,
   signInWithGitHub,
+  startIngestion,
   type Me,
+  type Repo,
   type ReposResponse,
 } from "../api";
+
+/** Per-repo ingestion state, keyed the same way the rows are. */
+type IngestState = { status: "queued" | "error"; message?: string };
+
+const repoKey = (r: Repo) => `${r.installation_id}-${r.id}`;
 
 export function Dashboard() {
   const [me, setMe] = useState<Me | null>(null);
@@ -16,6 +23,8 @@ export function Dashboard() {
   const [loadingRepos, setLoadingRepos] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [ingesting, setIngesting] = useState<Record<string, true>>({});
+  const [ingestState, setIngestState] = useState<Record<string, IngestState>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -56,6 +65,45 @@ export function Dashboard() {
   const onLogout = async () => {
     await logout();
     window.location.reload();
+  };
+
+  const onIngest = async (r: Repo) => {
+    const key = repoKey(r);
+    // id is GitHub's numeric repo id; -1 means GitHub did not send one.
+    if (r.id === null || !r.full_name) {
+      setIngestState((prev) => ({
+        ...prev,
+        [key]: { status: "error", message: "Repository is missing an id" },
+      }));
+      return;
+    }
+
+    setIngesting((prev) => ({ ...prev, [key]: true }));
+    try {
+      const res = await startIngestion({
+        installation_id: r.installation_id,
+        repo_id: r.id,
+        repo_full_name: r.full_name,
+      });
+      setIngestState((prev) => ({
+        ...prev,
+        [key]: { status: "queued", message: res.message },
+      }));
+    } catch (err) {
+      setIngestState((prev) => ({
+        ...prev,
+        [key]: {
+          status: "error",
+          message: err instanceof Error ? err.message : String(err),
+        },
+      }));
+    } finally {
+      setIngesting((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }
   };
 
   if (loading) {
@@ -168,33 +216,58 @@ export function Dashboard() {
                 <th>Language</th>
                 <th className="num">Stars</th>
                 <th>Access</th>
+                <th>Ingest</th>
               </tr>
             </thead>
             <tbody>
-              {shown.map((r) => (
-                <tr key={`${r.installation_id}-${r.id}`}>
-                  <td>
-                    {r.html_url ? (
-                      <a href={r.html_url} target="_blank" rel="noreferrer">
-                        {r.full_name}
-                      </a>
-                    ) : (
-                      r.full_name
-                    )}
-                    {r.description && (
-                      <div className="muted desc">{r.description}</div>
-                    )}
-                  </td>
-                  <td className="muted">{r.account_login}</td>
-                  <td className="muted">{r.language ?? "-"}</td>
-                  <td className="num">{r.stargazers_count ?? 0}</td>
-                  <td>
-                    <span className={`tag ${r.private ? "private" : "public"}`}>
-                      {r.private ? "Private" : "Public"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {shown.map((r) => {
+                const key = repoKey(r);
+                const busy = ingesting[key] === true;
+                const state = ingestState[key];
+                return (
+                  <tr key={key}>
+                    <td>
+                      {r.html_url ? (
+                        <a href={r.html_url} target="_blank" rel="noreferrer">
+                          {r.full_name}
+                        </a>
+                      ) : (
+                        r.full_name
+                      )}
+                      {r.description && (
+                        <div className="muted desc">{r.description}</div>
+                      )}
+                    </td>
+                    <td className="muted">{r.account_login}</td>
+                    <td className="muted">{r.language ?? "-"}</td>
+                    <td className="num">{r.stargazers_count ?? 0}</td>
+                    <td>
+                      <span className={`tag ${r.private ? "private" : "public"}`}>
+                        {r.private ? "Private" : "Public"}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className="btn"
+                        onClick={() => void onIngest(r)}
+                        disabled={busy}
+                      >
+                        {busy ? "Queuing..." : "Start ingest"}
+                      </button>
+                      {state && (
+                        <div
+                          className={`muted ingest-note ${state.status}`}
+                          title={state.message}
+                        >
+                          {state.status === "queued"
+                            ? state.message
+                            : state.message}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

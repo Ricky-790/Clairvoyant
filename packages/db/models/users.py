@@ -33,3 +33,7 @@ class User(Base):
     installations: Mapped[list["Installation"]] = relationship(
         "Installation", back_populates="user", cascade="all, delete-orphan"
     )
+
+    repositories: Mapped[list["Repository"]] = relationship(
+        "Repository", back_populates="user", cascade="all, delete-orphan"
+    )

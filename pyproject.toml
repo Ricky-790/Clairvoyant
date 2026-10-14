@@ -5,10 +5,12 @@ requires-python = ">=3.12"
 dependencies = [
     "server",
     "db",
+    "worker_services",
 ]
 
 [tool.uv.sources]
 server = { workspace = true }
 db = {workspace=true}
+worker_services = { workspace = true }
 [tool.uv.workspace]
 members = ["packages/*"]

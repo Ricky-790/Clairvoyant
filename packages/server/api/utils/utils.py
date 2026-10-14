@@ -54,3 +54,10 @@ def verify_signature(payload_body: bytes, signature_header: str | None):
     expected = "sha256=" + hmac.new(secret, payload_body, hashlib.sha256).hexdigest()
     if not hmac.compare_digest(expected, signature_header):
         raise HTTPException(401, "Invalid signature")
+
+
+BUCKET_URI = os.getenv("BUCKET_URI", "")
+
+
+def dump_to_bucket(file):
+    pass

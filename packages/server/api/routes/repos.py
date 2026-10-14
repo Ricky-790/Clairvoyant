@@ -4,9 +4,16 @@ import asyncio
 from typing import Any
 
 from api.deps.session import CurrentUser, DbSession
+from api.routes.schemas.schemas import StandardResponse
 from api.utils import github
 from fastapi import APIRouter
-from services import installations_service
+from fastapi.exceptions import HTTPException
+from models import OnboardingStatus
+from services import installations_service, repositories_service
+from starlette.requests import Request
+from workers.processes.ingestion import ingest_repository_task
+
+from .schemas import StartIngestionRequest
 
 router = APIRouter(tags=["Repos"])
 
@@ -46,10 +53,7 @@ async def list_repos(user: CurrentUser, session: DbSession):
     installations = await installations_service.list_for_user(session, user.id)
 
     results = await asyncio.gather(
-        *(
-            _repos_for(i.installation_id, i.account_login)
-            for i in installations
-        )
+        *(_repos_for(i.installation_id, i.account_login) for i in installations)
     )
 
     repositories: list[dict[str, Any]] = []
@@ -79,3 +83,45 @@ async def list_repos(user: CurrentUser, session: DbSession):
             for i in installations
         ],
     }
+
+
+@router.post("/repos/ingest", response_model=StandardResponse)
+async def start_ingestion(
+    request: Request, body: StartIngestionRequest, session: DbSession
+):
+    """Queue ingestion for a repository."""
+    user_id = request.session.get("user_id")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    installation = await installations_service.get_by_installation_id(
+        session, body.installation_id
+    )
+    # check if app is installed & user is authorized to it.
+    if not installation or installation.user_id != user_id:
+        raise HTTPException(
+            status_code=403,
+            detail="Installation not found/unauthorized",
+        )
+    repo = await repositories_service.get_by_repo_id(session, body.repo_id)
+    if repo is None:
+        repo = await repositories_service.create(
+            session,
+            user_id=user_id,
+            installation_id=body.installation_id,
+            repo_id=body.repo_id,
+            repo_full_name=body.repo_full_name,
+            onboarded=OnboardingStatus.pending,
+        )
+    else:
+        if repo.onboarded == OnboardingStatus.processing:
+            raise HTTPException(status_code=409, detail="Ingestion already in progress")
+        await repositories_service.update_onboarding_status(
+            session, repo.repo_id, OnboardingStatus.pending
+        )
+
+    await session.commit()
+
+    # enqueue the Celery task — only the internal repo id needed, task re-derives the rest
+    ingest_repository_task.delay(repo.id)
+
+    return StandardResponse(message="Queued")

@@ -228,3 +228,17 @@ a {
 .empty p {
   margin: 0;
 }
+
+.ingest-note {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  max-width: 22ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ingest-note.queued {
+  color: #7ee787;
+}
+.ingest-note.error {
+  color: #ff7b72;
+}
